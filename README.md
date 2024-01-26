@@ -5,7 +5,16 @@ C++ implementation of the paper: [Efficient Single Correspondence Voting for Poi
 ## Introduction
 We are actively updating the code and will open source the paper's code after the article is officially released.
 
-## KITTI
-Point cloud data can be downloaded from the official website: https://www.cvlibs.net/datasets/kitti/eval_odometry.php.
+## Datasets download
+
+The data required for testing can be obtained in the following ways:
+### 3DMatch and 3DLoMatch
+
+Point cloud data can be downloaded from the website: https://3dmatch.cs.princeton.edu/#rgbd-reconstruction-datasets.
+
+The download address of the required features and benchmarks: https://drive.google.com/drive/folders/17oapnRqExtRyLMws98DgghZNWpPP7BBY?usp=sharing.
+
+### KITTI
+Point cloud data can be downloaded from the website: https://www.cvlibs.net/datasets/kitti/eval_odometry.php.
 
 The download address of the required features and ICP fine optimization results: https://drive.google.com/drive/folders/1sT6xMCCiBEd-y3rPg5-qzNMEkANh55Rs?usp=sharing.
