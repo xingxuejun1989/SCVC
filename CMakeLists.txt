@@ -18,18 +18,11 @@ SET(CMAKE_C_STANDARD_REQUIRED ON)
 set(${PROJECT_NAME}_HEADERS
 
          src/algo/point_cloud_registration.h
-         src/algo/registration/point_cloud_feature_FPFH.h	
-         src/algo/registration/registration_c_utils.hpp
-         src/algo/registration/registration_hash_murmur.hpp
-         src/algo/registration/registration_hash_murmur64.hpp
-         src/algo/registration/registration_ObjectOpse.h
-         src/algo/registration/registration_ppf_helpers.hpp
-         src/algo/registration/registration_PPF_Match.h
+         src/algo/registration/registration_helpers.hpp
+         src/algo/registration/registration_SCVC.h
          src/algo/registration/registration_stdafx.h
-         src/algo/registration/registration_t_hash_int.hpp	
-         src/algo/registration/registration_IcpOptimizer.h
-	 src/algo/registration/plane_simplify.h
-	 src/algo/registration/dual_point.h
+         #src/algo/registration/registration_IcpOptimizer.h
+
 
          src/algo/ICP_Princeton/KDtree.h
          src/algo/ICP_Princeton/ICP.h
@@ -42,14 +35,10 @@ set(${PROJECT_NAME}_HEADERS
 set(${PROJECT_NAME}_SOURCES
         
          src/algo/point_cloud_registration.cpp
-         src/algo/registration/point_cloud_feature_FPFH.cpp
-         src/algo/registration/registration_ObjectOpse.cpp
-         src/algo/registration/registration_ppf_helpers.cpp
-         src/algo/registration/registration_PPF_Match.cpp
-         src/algo/registration/registration_t_hash_int.cpp
-         src/algo/registration/registration_IcpOptimizer.cpp
-         src/algo/registration/plane_simplify.cpp
-         src/algo/registration/dual_point.cpp
+         src/algo/registration/registration_helpers.cpp
+         src/algo/registration/registration_SCVC.cpp
+        # src/algo/registration/registration_IcpOptimizer.cpp
+
 		
          src/algo/ICP_Princeton/KDtree.cpp
          src/algo/ICP_Princeton/ICP.cpp

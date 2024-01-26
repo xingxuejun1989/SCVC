@@ -194,12 +194,12 @@ vector<int> IcpOptimizer::computeCorrespondances(Matrix<double,Dynamic,3> refClo
   
     
    
-    play3d::ppf_match::KDTree* kdt1 = play3d::ppf_match::BuildKDTree(refCloud.cast<float>());
+    scvc::KDTree* kdt1 = scvc::BuildKDTree(refCloud.cast<float>());
     
     
     std::vector<std::vector<int>> indices;
     std::vector<std::vector<float>> dists;
-    play3d::ppf_match::SearchKDTree(kdt1, queryCloud.cast<float>(), indices, dists, 1);
+   scvc::SearchKDTree(kdt1, queryCloud.cast<float>(), indices, dists, 1);
 
     //Create an index
    

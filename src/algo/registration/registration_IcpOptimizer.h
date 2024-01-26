@@ -19,7 +19,7 @@ As a consequence, TransMatrix is a column vector */
 typedef Eigen::Matrix<double,3,3> RotMatrix;               //A type for the rotation matrix
 typedef Eigen::Matrix<double,3,1> TransMatrix;             //A type for the translation matrix
 typedef std::pair<RotMatrix,TransMatrix> RigidTransfo;     //A type for the rigid transform
-typedef Eigen::Matrix<double,Eigen::Dynamic,3> PointCloud; //A type for the point clouds
+ //A type for the point clouds
 
 //Enumerator for setting the underlying ICP method used
 enum IcpMethod {pointToPoint,pointToPlane};

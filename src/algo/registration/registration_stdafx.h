@@ -17,10 +17,10 @@
 #include <math.h>
 #include <ctime>
 
-#include"registration_PPF_Match.h"
-#include"registration_ObjectOpse.h"
-#include"registration_c_utils.hpp"
-#include"registration_ppf_helpers.hpp"
+#include"registration_SCVC.h"
+//#include"registration_ObjectOpse.h"
+//#include"registration_c_utils.hpp"
+#include"registration_helpers.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -31,7 +31,7 @@
 #include "Eigen/Dense"
 #include "Eigen/Geometry"
 #include "Eigen/Core"
-#include "registration_ppf_helpers.hpp"
+
 
 #include<omp.h>
 

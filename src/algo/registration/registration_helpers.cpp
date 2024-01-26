@@ -3,12 +3,11 @@
 #include <ctime>
 #include  <direct.h>  
 
-namespace play3d {
-namespace ppf_match
+
+namespace scvc
 {
 
-//typedef flann::L2<float> Distance_32F;
-//typedef flann::Index< Distance_32F > FlannIndex;
+
 
 void shuffle(int *array, size_t n);
 
@@ -360,167 +359,7 @@ std::tuple<std::vector<Eigen::Vector3d>, double, double> NormalizePointCloud(
 	return output;
 }*/
 
-void  Ransac_Plane( MatrixXf & Model, Vector3f direction,double threshold, double gridstepleng ,int itermum, std::vector<SPlane> & Plane, VectorXi  &planeindex)
-{
 
-	std::default_random_engine random(0);
-	std::uniform_int_distribution<long> rand(0, Model.rows()-1);
-	
-	VectorXi tempindex = VectorXi::Zero(Model.rows());
-
-	MatrixXf  modeltemp = Model.block(0, 0, Model.rows(), 3);
-	MatrixXf  modeltempn = Model.block(0, 3, Model.rows(), 3);
-
-	for (int nn = 0; nn < Plane.size(); nn++)
-	{
-		int tieration = itermum;
-		Plane[nn].planeratio = 0;
-		//
-		std::vector<Matrix3f> tieration_point;
-		std::vector<Vector4d> tieration_coff;
-		std::vector<double> tieration_planeratio;
-		tieration_point.resize(tieration);
-		tieration_coff.resize(tieration);
-		tieration_planeratio.resize(tieration);
-
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic,8) 
-#endif
-		for (int i = 0; i < tieration; i++)
-		{
-			Matrix3f point;
-			Vector4d coff_temp;
-			point.row(0) = modeltemp.row(rand(random));
-			point.row(1) = modeltemp.row(rand(random));
-			point.row(2) = modeltemp.row(rand(random));
-			if (!CreatePlane(point, direction, coff_temp))
-			{
-				tieration_planeratio[i] = -1;
-				continue;
-			}
-			Vector3d  abc;
-			abc = coff_temp.head(3);
-			
-			double g = abc.dot(direction.cast<double>());
-			if (g<0.7)
-			{
-				tieration_planeratio[i] = -1;
-				continue;
-			}
-			VectorXd diff(Model.rows());
-			diff = modeltemp.cast<double>()*abc;
-			diff = diff.array() + coff_temp(3);
-			diff = diff.array().abs();
-			int k = 0;
-			for (int j = 0; j < Model.rows(); j++)
-			{
-				Vector3d  n1 = modeltempn.row(j).cast<double>().transpose();
-				double an = n1.dot(abc);
-				if (diff(j) < threshold && planeindex[j] == 0 && fabs(an) > 0.8)
-				{
-					k++;
-				}
-
-			}
-			tieration_planeratio[i] = k * 1.0 / Model.rows();
-			tieration_point[i] = point;
-			tieration_coff[i] = coff_temp;
-		}
-		//查找最大占比
-		int index = 0;
-		double maxratio = -1;
-		for (int i = 0; i < tieration; i++)
-		{
-			if (tieration_planeratio[i] > maxratio)
-			{
-				 maxratio= tieration_planeratio[i];
-				index = i;
-			}
-		}
-		//找索引
-		{
-			
-			Vector3d  abc;
-			abc = tieration_coff[index].head(3);
-			VectorXd diff(Model.rows());
-			diff = modeltemp.cast<double>()*abc;
-			diff = diff.array() + tieration_coff[index](3);
-			diff = diff.array().abs();
-
-			tempindex.setZero();
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic,8) 
-#endif
-			for (int i = 0; i < Model.rows(); i++)
-			{
-				if (diff(i) < threshold && planeindex[i] == 0)
-				{
-					tempindex[i] = 1;
-				}
-
-			}
-			Plane[nn].point = tieration_point[index];
-			Plane[nn].coff = tieration_coff[index];
-			Plane[nn].planeratio = tieration_planeratio[index];
-		}
-		
-		
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic,8) 
-#endif
-		for (int i = 0; i < Model.rows(); i++)
-		{
-			if (tempindex[i] != 0)
-			{
-				planeindex[i] = nn+1;
-			}
-		}
-		/*
-		//计算面积
-		if (Plane[nn].coff(2) < 0)
-			Plane[nn].coff = Plane[nn].coff*(-1);
-		Vector3d  v1(0, 0, 1);
-		Vector3d  v2(Plane[nn].coff(0), Plane[nn].coff(1), Plane[nn].coff(2));
-		Matrix3d rotation;
-		Rodriguesrotationformula(v1, v2, rotation);
-		MatrixXd model1(modeltemp.rows(),3);
-		model1 = modeltemp.cast<double>()*rotation.transpose();
-		double xmin, xmax, ymin, ymax;
-		xmin = model1(0, 0);
-		xmax = model1(0, 0);
-		ymin = model1(0, 1);
-		ymax = model1(0, 1);
-
-		for (int i = 0; i < modeltemp.rows(); i++)
-		{
-			if (tempindex[i] != 0)
-			{
-				if (model1(i, 0) > xmax) xmax = model1(i, 0);
-				if (model1(i, 0) < xmin) xmin = model1(i, 0);
-				if (model1(i, 1) > ymax) ymax = model1(i, 1);
-				if (model1(i, 1) < ymin) ymin = model1(i, 1);
-			}
-		}
-		int in = (xmax - xmin) / gridstepleng+1;
-		int jn = (ymax - ymin) / gridstepleng + 1;
-		MatrixXi area = MatrixXi::Zero(in, jn);
-
-		for (int i = 0; i < modeltemp.rows(); i++)
-		{
-			if (tempindex[i] != 0)
-			{
-				in = (model1(i, 0) - xmin) / gridstepleng;
-				jn = (model1(i, 1) - ymin) / gridstepleng;
-				area(in, jn) = 1;
-			}
-		
-		}
-		Plane[nn].rotation = rotation;
-		Plane[nn].area = area.sum()*gridstepleng*gridstepleng;*/
-
-	}
-	
-}
 void  Rodriguesrotationformula(const Vector3d  v1, const Vector3d v2, Matrix3d& rotation)
 {
 	double cosvalue,sinvalue;
@@ -2107,8 +1946,8 @@ MatrixXf loadPLYSimple_bin(const char* fileName, int withNormals)
 	{
 		for (int i = 0; i < numVertices; )
 		{
-			double fea[3];
-			if (ifs.read((char*)&fea[0], 3 * sizeof(double)))
+			float fea[3];
+			if (ifs.read((char*)&fea[0], 3 * sizeof(float)))
 			{
 
 				for (int col = 0; col < 3; ++col)
@@ -3943,6 +3782,8 @@ MatrixXf transformPose3f(MatrixXf pc, const Matrix4d& Pose)
 	return pct;
 }
 
+
+
 MatrixXf transformPCPosecood(MatrixXf pc, const Matrix4d& Pose)
 {
 	MatrixXf pct(pc.rows(), 3);
@@ -4000,4 +3841,3 @@ MatrixXf transformPCPose(MatrixXf & pc, const Matrix4d& Pose)
 
 } // namespace ppf_match_3d
 
-}
