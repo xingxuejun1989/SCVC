@@ -1,5 +1,5 @@
 # Specify the minimun camke version
-CMAKE_MINIMUM_REQUIRED(VERSION 3.10 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.1 FATAL_ERROR)
 
 # Create a project.
 get_filename_component(PROJECT_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
@@ -21,13 +21,12 @@ set(${PROJECT_NAME}_HEADERS
          src/algo/registration/registration_helpers.hpp
          src/algo/registration/registration_SCVC.h
          src/algo/registration/registration_stdafx.h
-         #src/algo/registration/registration_IcpOptimizer.h
-
-
+   
          src/algo/ICP_Princeton/KDtree.h
          src/algo/ICP_Princeton/ICP.h
          src/algo/ICP_Princeton/TriMesh.h
          src/algo/ICP_Princeton/TriMesh_algo.h
+
         )
 		
 
@@ -37,10 +36,8 @@ set(${PROJECT_NAME}_SOURCES
          src/algo/point_cloud_registration.cpp
          src/algo/registration/registration_helpers.cpp
          src/algo/registration/registration_SCVC.cpp
-        # src/algo/registration/registration_IcpOptimizer.cpp
-
-		
-         src/algo/ICP_Princeton/KDtree.cpp
+  
+		 src/algo/ICP_Princeton/KDtree.cpp
          src/algo/ICP_Princeton/ICP.cpp
          src/algo/ICP_Princeton/TriMesh_bounding.cpp
          src/algo/ICP_Princeton/TriMesh_connectivity.cpp
@@ -53,33 +50,51 @@ set(${PROJECT_NAME}_SOURCES
          src/algo/ICP_Princeton/TriMesh_tstrips.cpp
          src/algo/ICP_Princeton/remove.cpp
          src/algo/ICP_Princeton/reorder_verts.cpp
+  
          src/main.cpp
 
         )
 
 
 # Find third-party dependent libraries.
- FIND_PACKAGE(PCL 1.10.1 REQUIRED)
+ #FIND_PACKAGE(PCL 1.10.1 REQUIRED)
+
+### found OpenMP libraries
+find_package(OpenMP REQUIRED)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+
+#find_package (Eigen3 REQUIRED NO_MODULE)
+
+
+
+
+
+
+if (MSVC)
+    add_compile_definitions(_ENABLE_EXTENDED_ALIGNED_STORAGE)
+	add_compile_definitions(/bigobj)
+endif(MSVC)
+
+
+### Configuration
+set(3DMODEL_ROOT         ${CMAKE_CURRENT_LIST_DIR})
+set(3DMODEL_THIRD_PARTY  ${3DMODEL_ROOT}/3rd_party)
+
+add_subdirectory(3rdParty)
+mark_as_advanced(FORCE BUILD_SHARED_LIBS)
+mark_as_advanced(FORCE BUILD_TESTING)
+
+
+
 
 # Add an executable file.
 ADD_EXECUTABLE(${PROJECT_NAME} ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS})
 
-if (MSVC)
-	add_definitions(/bigobj)
-endif(MSVC)
+target_include_directories(${PROJECT_NAME} PRIVATE ${3DMODEL_THIRD_PARTY})
 
-# Add header file directory
-TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PRIVATE ${PCL_INCLUDE_DIRS})
+set(EIGEN_SOURCE_DIR ${3DMODEL_THIRD_PARTY}/eigen-3.4.0/)
+target_include_directories(${PROJECT_NAME} PRIVATE ${EIGEN_SOURCE_DIR})
 
 
-# Add library directory
-TARGET_LINK_DIRECTORIES(${PROJECT_NAME} PRIVATE ${PCL_LIBRARY_DIRS})
-
-# Add compiler definition
-TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME} PRIVATE ${PCL_DEFINITIONS})
-
-# Cancel the existing compiler definition.
-SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "/UBOOST_ALL_NO_LIB-DBOOST_ALL_NO_LIB")
-
-# 添加依赖库文件
-target_link_libraries(${PROJECT_NAME} PRIVATE ${PCL_LIBRARIES})

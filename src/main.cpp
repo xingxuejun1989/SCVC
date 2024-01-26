@@ -1,10 +1,11 @@
 ﻿#include <vector>
-#include <Eigen/Core>
+//#include <Eigen/Core>
 #include<fstream>
 #include <io.h>
 #include"algo/point_cloud_registration.h"
 #include<string>
-
+//#include"Eigen/Core"
+#include"../3rdParty/eigen-3.4.0/Eigen/Core"
 
 int main(int argc, char** argv)
 {

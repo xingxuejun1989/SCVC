@@ -3,10 +3,13 @@
 
 
 
-#include "FLANN/algorithms/dist.h"
-#include "Eigen/Dense"
-#include"flann/flann.hpp"
+#include "../3rdParty/kd_tree/FLANN/algorithms/dist.h"
+#include"../3rdParty/kd_tree/FLANN/flann.hpp"
+//#include "Eigen/Dense"
+
 #include <sstream>  // flann dependency, needed in precomp now
+#include"../3rdParty/eigen-3.4.0/Eigen/Dense"
+
 
 using namespace Eigen;
 
@@ -65,20 +68,6 @@ namespace scvc
 			// Mat(Pose).rowRange(0, 3).colRange(3, 4).copyTo(t);
 		}
 
-		//void  cuvrefeatrue(KDTree * tree, MatrixXf & Model, int nn, float radius, std::vector<std::vector<float>>& model_curve_feature);
-		//void  cuvrefeatrue2(KDTree * tree, MatrixXf & Model, int nn, float radius, std::vector<std::vector<float>>& model_curve_feature);
-		//void  cuvrefeatrue_8v(KDTree* tree, MatrixXf& Model, int nn, float radius, MatrixXf& model_curve_feature);
-		//void  normal(KDTree* tree, MatrixXf& Model, int nn, MatrixXf& normal, double o);
-		//void kmeans(MatrixXf feature, int k, VectorXi& classid, MatrixXf& center, double error);
-		//最小二乘法拟合平面
-		//void  leastsquarePlane(const MatrixXf & Model, Vector4d & coff, int rownum);
-		//bool  CreatePlane(const Matrix3f & Model,Vector3f direction, Vector4d & coff);
-		//void  Ransac_Plane(MatrixXf & Model, Vector3f direction,double threshold, double gridstepleng, int itermum, std::vector<SPlane> & Plane, VectorXi  &planeindex);
-		
-		//Vector3f world2screen(MatrixXf cam_K, Vector3f v, int w, int h);
-		//MatrixXf transformPose3f(MatrixXf pc, const Matrix4d& Pose);
-		//Vector3f barycentric(Vector3f A, Vector3f B, Vector3f C, Vector3f P);
-		//void triangle(Matrix3f p, MatrixXf& zbuffer, MatrixXf cam_K);
 		/**
 		罗德里格旋转公式
 		*/

@@ -28,14 +28,18 @@
 
 #include <vector>
 
-#include "Eigen/Dense"
-#include "Eigen/Geometry"
-#include "Eigen/Core"
+#include"../3rdParty/eigen-3.4.0/Eigen/Dense"
+#include"../3rdParty/eigen-3.4.0/Eigen/Geometry"
+#include"../3rdParty/eigen-3.4.0/Eigen/Core"
+
+//#include "Eigen/Dense"
+//#include "Eigen/Geometry"
+//#include "Eigen/Core"
 
 
 #include<omp.h>
 
-#include"FLANN/flann.hpp"
+#include"../3rdParty/kd_tree/FLANN/flann.hpp"
 #include <sstream>  // flann dependency, needed in precomp now
 
 
