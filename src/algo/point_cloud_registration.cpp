@@ -276,18 +276,13 @@ void samplepoint(MatrixXf &pc, MatrixXf &feat,int pointnum)
 
 
 
-void PointCloudRegistration::Registration_KITTI(std::string featuretype, std::string posepath)
+void PointCloudRegistration::Registration_KITTI(std::string featuretype, std::string posepath, std::string featruepath, std::string pointcloudpath)
 {
-	registration_parameter para;
-	para.denoisingneighborhood = 10;
-	para.DenoisingConfidence = 0.99;
+	
 	std::vector<Matrix4d> pose;
-	//投票相关参数初始化，为简化使用，不重要的参数做了固定设置
 	ppf_model_parameter model_parameter;
 	model_parameter.relativeSamplingnum = 4000;// ;
-	model_parameter.SamplingNumber_f = 8000;
-	//model_parameter.SCVC_distance = value;//0.01
-	model_parameter.SCVC_anglenumber = 90;//90
+	model_parameter.PPF_anglenumber = 90;//90
 	model_parameter.Sampling_threshold_Angles = 25;
 	model_parameter.line_minlenght = 0.01;
 	model_parameter.voting_top = int(200 + 0.1);//200
@@ -297,31 +292,24 @@ void PointCloudRegistration::Registration_KITTI(std::string featuretype, std::st
 	model_parameter.overlap_dis =2.5;// 0.5;
 	model_parameter.overlap_vl_angle = 3.0;//2.0
 	model_parameter.overlap_n = 0.3;
-	//投票相关参数初始化，为简化使用，不重要的参数做了固定设置
+
 	ppf_scenematching_parameter scenematching_parameter;
 	scenematching_parameter.votepeakseffective = 2.0;
 	scenematching_parameter.voteAnglenum = int(60 + 0.1);//90/60
 	scenematching_parameter.votepeaks_number = 1;
-
-	scenematching_parameter.SCVC_weight = 2.0;
 	scenematching_parameter.samplingrate = 0.1;
 	scenematching_parameter.Clusteringdistance = 3.0;//位姿聚类距离 1.0
-	scenematching_parameter.ICP_nbIterations = 10;//10
-
-
+	scenematching_parameter.ICP_nbIterations = 15;//10
+	scenematching_parameter.ICP_radius = 5;
+	scenematching_parameter.ICP_neibor = 30; //re 30
 
 	clock_t tick1 = clock();
 
-
-	//文件句柄
 	intptr_t hFile = 0;
-	//文件信息
 	struct _finddata_t fileinfo;
 	std::string p;
 	std::vector<std::string> pointcloudpairname;
 
-
-	//std::string pointcloudpath = "E:/pointclouddata/data_odometry_velodyne/icp";
 
 	if ((hFile = _findfirst(p.assign(posepath).append("/*").c_str(), &fileinfo)) != -1)
 	{
@@ -348,20 +336,31 @@ void PointCloudRegistration::Registration_KITTI(std::string featuretype, std::st
 	
 
 
+	std::vector<MatrixXf> ffeat(600);
+	std::vector<MatrixXf> sfeat(600);
+	std::vector<MatrixXf> fpoint(600);
+	std::vector<MatrixXf> spoint(600);
+	std::vector<MatrixXf> fnormal(600);
+	std::vector<MatrixXf> snormal(600);
+
+	for (int i = 0; i < 600; i++)
+	{
+		ffeat[i]= MatrixXf::Zero(3,3);
+		sfeat[i] = MatrixXf::Zero(3, 3);
+		fpoint[i] = MatrixXf::Zero(3, 3);
+		spoint[i] = MatrixXf::Zero(3, 3);
+		fnormal[i] = MatrixXf::Zero(3, 3);
+		snormal[i] = MatrixXf::Zero(3, 3);
+	}
+
 	MatrixXf analysis_re = MatrixXf::Zero(10, 8);
-	/*
-	*/
 	for (int ana = 0; ana < 10; ana++)
 	{
-		scenematching_parameter.Clusteringdistance = 3.0;
-		analysis_re(ana, 0) = scenematching_parameter.Clusteringdistance;
-	
+		//scenematching_parameter.ICP_radius = 5 + 5 * int(ana/4);
+		analysis_re(ana, 0) = ana + 1;
 
-
-		bool yn = true;
 		
-
-
+		bool yn = true;
 		std::vector<std::vector<double>> res;
 		res.resize(3);
 		for (int i = 0; i < 3; i++)
@@ -393,9 +392,6 @@ void PointCloudRegistration::Registration_KITTI(std::string featuretype, std::st
 			std::string first_pc_name = std::string(6 - pointfilename[1].length(), '0') + pointfilename[1];
 			std::string second_pc_name = std::string(6 - pointfilename[2].length(), '0') + pointfilename[2];
 			
-			
-			
-			
 			//read pose
 			ifstream fin;
 			MatrixXd gt_pose(4, 4);
@@ -419,91 +415,100 @@ void PointCloudRegistration::Registration_KITTI(std::string featuretype, std::st
 		
 			fin.close();
 
-			//std::string featuretype = "fpfh";
-			std::string pointcloudpath = "E:/pointclouddata/data_odometry_velodyne/sequences/" + sequence_name + "/pointcloud/";
-			
+					
+		
 			{
 				MatrixXf fristkeypoint, secondkeypoint;
 				MatrixXf fristfeature, secondfeature;
-				VectorXf corr_scores;
-
-				if ((featuretype == "fcgf"))
-				{
-					std::string featpath = "E:/pointclouddata/data_odometry_velodyne/feat_fcgf_txt/" + filename[0] + ".npz.txt";
-					std::cout << featpath << std::endl;
-					if (!readfeat_stc_tgt_kitti(featpath, fristkeypoint, secondkeypoint, fristfeature, secondfeature))
-					{
-						continue;
-					}
-				}
 				
-				else if ((featuretype == "fpfh"))
+				MatrixXf fristpointcloud;
+				MatrixXf secondpointcloud;
+				
+
+
+				std::string featpath = featruepath + filename[0] + ".npz.txt";
+				if(ffeat[i].rows() <10)
 				{
-					std::string featpath = "E:/pointclouddata/data_odometry_velodyne/feat_fpfh_txt/" + filename[0] + ".npz.txt";
 					std::cout << featpath << std::endl;
 					if (!readfeat_stc_tgt_kitti(featpath, fristkeypoint, secondkeypoint, fristfeature, secondfeature))
 					{
 						continue;
 					}
-					/*std::cout << pointcloudpath + first_pc_name + "_fpfh.npz" << std::endl;
-					if (!readfeature(pointcloudpath + first_pc_name + "_fpfh.npz", fristkeypoint, fristfeature, false))
-					{
-						continue;
+
+					if (fristkeypoint.rows() > 5000)
+						samplepoint(fristkeypoint, fristfeature, 5000);
+					if (secondkeypoint.rows() > 5000)
+						samplepoint(secondkeypoint, secondfeature, 5000);
+					cout << "samplepoint " << fristkeypoint.rows() << " " << secondkeypoint.rows() << endl;
+
+
+					std::string pcpath = pointcloudpath + sequence_name + "/pointcloud/";
+					std::string fcpath, scpath;
+					fcpath = pcpath + first_pc_name + ".bin.ply";
+					scpath = pcpath + second_pc_name + ".bin.ply";
+					std::cout << fcpath << std::endl;
+					std::cout << scpath << std::endl;
+
+					MatrixXf fristpoint, secondpoint;
+					fristpoint = loadPLYSimple(fcpath.c_str(), 1);
+					secondpoint = loadPLYSimple(scpath.c_str(), 1);
+
+
+					
+
+
+					{//拼接点云计算法向
+						MatrixXf fristm(fristkeypoint.rows() + fristpoint.rows(), 3);
+						MatrixXf secondm(secondkeypoint.rows() + secondpoint.rows(), 3);
+						fristm << fristkeypoint, fristpoint.block(0, 0, fristpoint.rows(), 3);
+						fristpoint = fristm;
+						secondm << secondkeypoint, secondpoint.block(0, 0, secondpoint.rows(), 3);
+						secondpoint = secondm;
 					}
-					std::cout << pointcloudpath + second_pc_name + "_fpfh.npz" << std::endl;
-					if (!readfeature(pointcloudpath + second_pc_name + "_fpfh.npz", secondkeypoint, secondfeature, false))
-					{
-						continue;
-					}*/
+
+
+
+					std::cout << "计算法向" << std::endl;
+					Vector3f centerpoint(0, 0, 0);
+					fristpointcloud = normal(fristpoint, centerpoint, 25, 0.08);//30
+					secondpointcloud = normal(secondpoint, centerpoint, 25, 0.08);//30
+					std::cout << "计算法向结束" << std::endl;
+
+
+					ffeat[i] = fristfeature;
+					sfeat[i]= secondfeature;
+					fpoint[i]= fristkeypoint;
+					spoint[i]= secondkeypoint;
+
+					fnormal[i]= fristpointcloud;
+					snormal[i]= secondpointcloud;
 				}
-				if (fristkeypoint.rows() > 5000)
-					samplepoint(fristkeypoint, fristfeature, 5000);
-				if (secondkeypoint.rows() > 5000)
-					samplepoint(secondkeypoint, secondfeature,5000);
-				cout << "samplepoint " << fristkeypoint.rows() << " " << secondkeypoint.rows() << endl;
+				else
+				{
+					fristfeature = ffeat[i];
+					secondfeature=sfeat[i];
+					fristkeypoint=fpoint[i] ;
+					secondkeypoint=spoint[i];
 
-				std::string fcpath, scpath;
-				fcpath = pointcloudpath + first_pc_name + ".bin.ply";
-				scpath = pointcloudpath + second_pc_name + ".bin.ply";
-				std::cout << fcpath << std::endl;
-				std::cout << scpath << std::endl;
+					fristpointcloud=fnormal[i];
+					secondpointcloud=snormal[i];
 
-				MatrixXf fristpoint, secondpoint;
-				fristpoint = loadPLYSimple(fcpath.c_str(), 1);
-				secondpoint = loadPLYSimple(scpath.c_str(), 1);
-
-
+				}
 			
-			
+				
+					
+				
+				
+
+				//
 				//初始化配准方法类
 				SCVC_PSO_Match detectorpso(model_parameter);
 
-			
-				
-				{//拼接点云计算法向
-					MatrixXf fristm(fristkeypoint.rows() + fristpoint.rows(), 3);
-					MatrixXf secondm(secondkeypoint.rows() + secondpoint.rows(), 3);
-					fristm << fristkeypoint, fristpoint.block(0,0, fristpoint.rows(), 3);
-					fristpoint = fristm;
-					secondm << secondkeypoint, secondpoint.block(0, 0, secondpoint.rows(), 3);
-					secondpoint = secondm;
-				}
-				
-				
-
-				std::cout << "计算法向" << std::endl;
-				Vector3f centerpoint(0, 0, 0);
-				MatrixXf fristpointcloud = normal(fristpoint, centerpoint, 25, 0.08);//30
-				MatrixXf secondpointcloud = normal(secondpoint, centerpoint, 25, 0.08);//30
-				std::cout << "计算法向结束" << std::endl;
-
-				
-					
 				detectorpso.set_groundturth_pose(gt_pose);
 				
 
 				clock_t tick1 = clock();
-				if ((featuretype == "fcgf")  || (featuretype == "fpfh"))
+				
 				{
 					detectorpso.Modeldown(fristpointcloud, fristfeature.rows());	
 					detectorpso.Scenedown(secondpointcloud, secondfeature.rows());
@@ -523,7 +528,7 @@ void PointCloudRegistration::Registration_KITTI(std::string featuretype, std::st
 				std::vector<SPose3D_R> results;
 				std::vector<double> record;
 				//模型的SCVC配准
-				detectorpso.match_SCVC_registration2(results, scenematching_parameter);
+				detectorpso.match_SCVC_registration(results, scenematching_parameter);
 				//std::cout << point_each + 2 << " match_SCVC in "<< (double)(tick4 - tick3) / CLOCKS_PER_SEC<< " sec" << std::endl;
 				clock_t tick3 = clock();
 
@@ -531,10 +536,6 @@ void PointCloudRegistration::Registration_KITTI(std::string featuretype, std::st
 				Matrix4d prop = results[0].Pose;
 				
 				//system("pause");
-
-
-				
-
 				{
 					
 					double acc = 0;
@@ -646,18 +647,13 @@ void PointCloudRegistration::Registration_KITTI(std::string featuretype, std::st
 
 
 
-void PointCloudRegistration::Registration_3DMatch3DLoMatch()
+void PointCloudRegistration::Registration_3DMatch3DLoMatch(std::string dataset, std::string featuretype, std::string posepath, std::string featruepath, std::string pointcloudpath)
 {
-	registration_parameter para;
-	para.denoisingneighborhood = 10;
-	para.DenoisingConfidence = 0.9;
+
 	std::vector<Matrix4d> pose;
-	//投票相关参数初始化，为简化使用，不重要的参数做了固定设置
 	ppf_model_parameter model_parameter;
 	model_parameter.relativeSamplingnum = 4000;// ;
-	model_parameter.SamplingNumber_f = 8000;
-	//model_parameter.SCVC_distance = value;//0.01
-	model_parameter.SCVC_anglenumber = 90;//90
+	model_parameter.PPF_anglenumber = 90;//90
 	model_parameter.Sampling_threshold_Angles = 25;
 	model_parameter.line_minlenght = 0.01;
 	model_parameter.voting_top = 200;//200
@@ -667,47 +663,19 @@ void PointCloudRegistration::Registration_3DMatch3DLoMatch()
 	model_parameter.overlap_dis = 2.5;// 2.5;
 	model_parameter.overlap_vl_angle = 2.0;
 	model_parameter.overlap_n = 2.0;
-	//投票相关参数初始化，为简化使用，不重要的参数做了固定设置
+
 	ppf_scenematching_parameter scenematching_parameter;
 	scenematching_parameter.votepeakseffective = 2.0;
 	scenematching_parameter.voteAnglenum = 60;//90/60
 	scenematching_parameter.votepeaks_number = 1;
 
-	scenematching_parameter.SCVC_weight = 2.0;
 	scenematching_parameter.samplingrate = 0.1;
 	scenematching_parameter.Clusteringdistance = 1.0;//位姿聚类距离 1.0
-	scenematching_parameter.ICP_nbIterations = 15;//10
-
-	/* 3DMATCH
-	registration_parameter para;
-	para.denoisingneighborhood = 10;
-	para.DenoisingConfidence = 0.9;
-	std::vector<Matrix4d> pose;
-	//投票相关参数初始化，为简化使用，不重要的参数做了固定设置
-	ppf_model_parameter model_parameter;
-	model_parameter.relativeSamplingnum = 4000;// ;
-	model_parameter.SamplingNumber_f = 8000;
-	//model_parameter.SCVC_distance = value;//0.01
-	model_parameter.SCVC_anglenumber = 90;//90
-	model_parameter.Sampling_threshold_Angles = 25;
-	model_parameter.line_minlenght = 0.01;
-	model_parameter.voting_top = 200;//200
-	model_parameter.feature_num = 500;// 500;
-	model_parameter.clutter_veri = 25;//10
-	model_parameter.overlap_angle = 130;// 130;
-	model_parameter.overlap_dis = 2.5;// 2.5;
-	model_parameter.overlap_vl_angle = 2.0;
-	model_parameter.overlap_n = 2.0;
-	//投票相关参数初始化，为简化使用，不重要的参数做了固定设置
-	ppf_scenematching_parameter scenematching_parameter;
-	scenematching_parameter.votepeakseffective = 2.0;
-	scenematching_parameter.voteAnglenum = 60;//90/60
-	scenematching_parameter.votepeaks_number = 1;
-
-	scenematching_parameter.SCVC_weight = 2.0;
-	scenematching_parameter.samplingrate = 0.1;
-	scenematching_parameter.Clusteringdistance = 1.0;//位姿聚类距离 1.0
-	scenematching_parameter.ICP_nbIterations = 15;//10 */
+	scenematching_parameter.ICP_nbIterations = 15;//
+	scenematching_parameter.ICP_radius =12;// re 10
+	scenematching_parameter.ICP_neibor = 30; //re 30
+	
+	
 
 	clock_t tick1 = clock();
 	
@@ -732,14 +700,11 @@ void PointCloudRegistration::Registration_3DMatch3DLoMatch()
 	ansys.setZero();
 	for (int ana = 0; ana < 10; ana++)
 	{
-		model_parameter.relativeSamplingnum = 4000+ 500 * (int(ana / 5));
-		ansys(ana, 0) = model_parameter.relativeSamplingnum;
+		ansys(ana, 0) = ana+1;
 
 		std::vector< std::vector<double>> res;
 		for (int dn = 0; dn < data_name.size(); dn++)
 		{
-
-
 			for (int i = 0; i < 88; i++)
 			{
 				ffeat[i].resize(3, 3);
@@ -772,17 +737,13 @@ void PointCloudRegistration::Registration_3DMatch3DLoMatch()
 			//pointpose.resize(1591);
 
 
-			string gtpath = "E:/pointclouddata/3Dmatch/benchmarks/3DMatch/" + dataname + "/gt.log";
+			string gtpath = posepath + dataname + "/gt.log";
 			//string gtpath = "E:/pointclouddata/3Dmatch/benchmarks/3DLoMatch/" + dataname + "/gt.log";
 			pointpose = readpose(gtpath, firstpointcloudname, secondpointcloudname);
 			//pointposeest = readpose(opestpath, firstpointcloudname_est, secondpointcloudname_est);
 
-			std::string pointcloudpath = "E:/pointclouddata/3Dmatch/pointcloud/" + dataname + "/cloud_bin_";
-
-			//std::string featruepath = "E:/pointclouddata/3Dmatch/noise/FPFH/" + dataname + "/cloud_bin_";
-			//std::string featuretype = "fpfh";//geo_match//fpfh//fcgf
-			std::string featruepath = "E:/pointclouddata/3Dmatch/noise/FCGF/" + dataname + "/cloud_bin_";
-			std::string featuretype = "fcgf";//geo_match//fpfh//fcgf
+			string pcpath = pointcloudpath + dataname + "/cloud_bin_";
+			string fpath = featruepath + dataname + "/cloud_bin_";
 
 			int num = 0;
 			int acc = 0;
@@ -812,15 +773,11 @@ void PointCloudRegistration::Registration_3DMatch3DLoMatch()
 					MatrixXf fristkeypoint, secondkeypoint;
 					MatrixXf fristfeature, secondfeature;
 					VectorXf corr_scores;
-					//cout << (featuretype == "fcgf") << endl;
-
-
-					if ((featuretype == "fcgf"))
 					{
-						std::cout << featruepath + to_string(firstpointcloudname[i]) + ".ply_fcgf.txt" << std::endl;
+						std::cout << fpath + to_string(firstpointcloudname[i]) + ".ply_"+ featuretype +".txt" << std::endl;
 						if (ffeat[firstpointcloudname[i]].rows() < 5)
 						{
-							if (!readfeature2(featruepath + to_string(firstpointcloudname[i]) + ".ply_fcgf.txt", fristkeypoint, fristfeature, false))
+							if (!readfeature2(fpath + to_string(firstpointcloudname[i]) + ".ply_" + featuretype + ".txt", fristkeypoint, fristfeature, false))
 							{
 								continue;
 							}
@@ -834,8 +791,8 @@ void PointCloudRegistration::Registration_3DMatch3DLoMatch()
 						}
 						if (sfeat[secondpointcloudname[i]].rows() < 5)
 						{
-							std::cout << featruepath + to_string(secondpointcloudname[i]) + ".ply_fcgf.txt" << std::endl;
-							if (!readfeature2(featruepath + to_string(secondpointcloudname[i]) + ".ply_fcgf.txt", secondkeypoint, secondfeature, false))
+							std::cout << fpath + to_string(secondpointcloudname[i]) + ".ply_" + featuretype + ".txt" << std::endl;
+							if (!readfeature2(fpath + to_string(secondpointcloudname[i]) + ".ply_" + featuretype + ".txt", secondkeypoint, secondfeature, false))
 							{
 								continue;
 							}
@@ -849,44 +806,12 @@ void PointCloudRegistration::Registration_3DMatch3DLoMatch()
 						}
 
 					}
-					else if ((featuretype == "fpfh"))
-					{
-						std::cout << featruepath + to_string(firstpointcloudname[i]) + ".ply_fpfh.txt" << std::endl;
-						if (ffeat[firstpointcloudname[i]].rows() < 5)
-						{
-							if (!readfeature2(featruepath + to_string(firstpointcloudname[i]) + ".ply_fpfh.txt", fristkeypoint, fristfeature, false))
-							{
-								continue;
-							}
-							ffeat[firstpointcloudname[i]] = fristfeature;
-							fpoint[firstpointcloudname[i]] = fristkeypoint;
-						}
-						else
-						{
-							fristfeature = ffeat[firstpointcloudname[i]];
-							fristkeypoint = fpoint[firstpointcloudname[i]];
-						}
-
-						std::cout << featruepath + to_string(secondpointcloudname[i]) + ".ply_fpfh.txt" << std::endl;
-						if (sfeat[secondpointcloudname[i]].rows() < 5)
-						{
-							if (!readfeature2(featruepath + to_string(secondpointcloudname[i]) + ".ply_fpfh.txt", secondkeypoint, secondfeature, false))
-							{
-								continue;
-							}
-							sfeat[secondpointcloudname[i]] = secondfeature;
-							spoint[secondpointcloudname[i]] = secondkeypoint;
-						}
-						else
-						{
-							secondfeature = sfeat[secondpointcloudname[i]];
-							secondkeypoint = spoint[secondpointcloudname[i]];
-						}
-					}
+					
 
 					std::string fcpath, scpath;
-					fcpath = pointcloudpath + to_string(firstpointcloudname[i]) + ".ply";
-					scpath = pointcloudpath + to_string(secondpointcloudname[i]) + ".ply";
+					fcpath = pcpath + to_string(firstpointcloudname[i]) + ".ply";
+					scpath = pcpath + to_string(secondpointcloudname[i]) + ".ply";
+					
 					std::cout << fcpath << std::endl;
 					std::cout << scpath << std::endl;
 					MatrixXf fristpointcloud;
@@ -900,8 +825,7 @@ void PointCloudRegistration::Registration_3DMatch3DLoMatch()
 							fristpoint.conservativeResize(fristpoint.rows(), 3);
 
 							std::cout << "模型1去噪前" << fristpoint.rows() << std::endl;
-							fristpoint = StatisticsDenoise(fristpoint,
-								para.denoisingneighborhood, para.DenoisingConfidence);
+							fristpoint = StatisticsDenoise(fristpoint,10,0.9);
 							std::cout << "模型1去噪后" << fristpoint.rows() << std::endl;
 							//拼接点云计算法向
 							MatrixXf fristm(fristkeypoint.rows() + fristpoint.rows(), 3);
@@ -927,8 +851,7 @@ void PointCloudRegistration::Registration_3DMatch3DLoMatch()
 							secondpoint.conservativeResize(secondpoint.rows(), 3);
 
 							std::cout << "模型2去噪前" << secondpoint.rows() << std::endl;
-							secondpoint = StatisticsDenoise(secondpoint,
-								para.denoisingneighborhood, para.DenoisingConfidence);
+							secondpoint = StatisticsDenoise(secondpoint, 10, 0.9);
 							std::cout << "模型2去噪后" << secondpoint.rows() << std::endl;
 							//拼接点云计算法向
 							MatrixXf secondm(secondkeypoint.rows() + secondpoint.rows(), 3);
@@ -945,21 +868,6 @@ void PointCloudRegistration::Registration_3DMatch3DLoMatch()
 						{
 							secondpointcloud = snormal[secondpointcloudname[i]];
 						}
-						//MatrixXf fristpoint, secondpoint;
-						//fristpoint = loadPLYSimple_bin(fcpath.c_str(), 0);
-						//secondpoint = loadPLYSimple_bin(scpath.c_str(), 0);
-						//fristpoint.conservativeResize(fristpoint.rows(), 3);
-						//secondpoint.conservativeResize(secondpoint.rows(), 3);
-
-
-
-
-
-						//std::cout << "计算法向" << std::endl;
-						//Vector3f centerpoint(0, 0, 0);
-						//MatrixXf fristpointcloud = normal(fristpoint, centerpoint, 30, 0.08);//30 fpfh noise 50  0.1
-						//MatrixXf secondpointcloud = normal(secondpoint, centerpoint, 30, 0.08);//30 fpfh noise 50 0.1
-						//std::cout << "计算法向结束" << std::endl;
 					}
 
 
@@ -971,7 +879,7 @@ void PointCloudRegistration::Registration_3DMatch3DLoMatch()
 
 
 					clock_t tick1 = clock();
-					if ((featuretype == "fcgf") || (featuretype == "fpfh"))//拼接点云计算法向
+					//拼接点云计算法向
 					{
 						//模型下采样
 						detectorpso.Modeldown(fristpointcloud, fristfeature.rows());
@@ -995,7 +903,7 @@ void PointCloudRegistration::Registration_3DMatch3DLoMatch()
 					std::vector<SPose3D_R> results;
 					std::vector<double> record;
 					//模型的SCVC配准
-					detectorpso.match_SCVC_registration2(results, scenematching_parameter);
+					detectorpso.match_SCVC_registration(results, scenematching_parameter);
 
 					clock_t tick3 = clock();
 					total_time += (double)(tick3 - tick1) / CLOCKS_PER_SEC;
