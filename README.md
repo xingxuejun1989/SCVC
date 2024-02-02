@@ -1,17 +1,37 @@
-#PPF_Registration
-Using PPF to achieve point cloud registration.
+# Efficient Single Correspondence Voting for Point Cloud Registration
 
-test environment：
-pcl 1.12.1
-vs 2019
-cmake  3.15.2
+C++ implementation of the paper: [Efficient Single Correspondence Voting for Point Cloud Registration]
 
-Notice:
-1.We need to manually st the boost path when we camke.
+## Introduction
+We are actively updating the code and will open source the paper's code after the article is officially released.
 
-example:
-E:/PCL 1.12.1/3rdParty/Boost/lib/cmake/Boost-1.78.0
+## Datasets download
 
-2.Modify the floor function on line 80-81 of the PCL file  (pcl-1.12\pcl\registration\impl\ppf_registration.hpp)：
+The data required for testing can be obtained in the following ways:
+### 3DMatch and 3DLoMatch
 
-  const auto aux_size = static_cast<std::size_t>(std::ceil(2 * M_PI / search_method_->getAngleDiscretizationStep()));
+Point cloud data can be downloaded from the website: https://3dmatch.cs.princeton.edu/#rgbd-reconstruction-datasets.
+
+The download address of the required features and benchmarks: https://drive.google.com/drive/folders/17oapnRqExtRyLMws98DgghZNWpPP7BBY?usp=sharing.
+
+### KITTI
+Point cloud data can be downloaded from the website: https://www.cvlibs.net/datasets/kitti/eval_odometry.php.
+
+The download address of the required features and ICP fine optimization results: https://drive.google.com/drive/folders/1sT6xMCCiBEd-y3rPg5-qzNMEkANh55Rs?usp=sharing.
+
+## Citation
+
+```bibtex
+@InProceedings{X,
+    author    = {X},
+    title     = {X},
+    booktitle = {X},
+    month     = {X},
+    year      = {X},
+    pages     = {1-16}
+}
+```
+
+## Acknowledgements
+
+- [A Symmetric Objective Function for ICP](https://gfx.cs.princeton.edu/pubs/Rusinkiewicz_2019_ASO/)
