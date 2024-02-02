@@ -301,7 +301,7 @@ void PointCloudRegistration::Registration_KITTI(std::string featuretype, std::st
 	scenematching_parameter.Clusteringdistance = 3.0;//Œª◊Àæ€¿‡æ‡¿Î 1.0
 	scenematching_parameter.ICP_nbIterations = 15;//10
 	scenematching_parameter.ICP_radius = 5;
-	scenematching_parameter.ICP_neibor = 30; //re 30
+	scenematching_parameter.ICP_neibor = 50; //re 30
 
 	clock_t tick1 = clock();
 
