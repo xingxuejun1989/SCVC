@@ -29,7 +29,7 @@ int main(int argc, char** argv)
         std::string posepath = "E:/pointclouddata/data_odometry_velodyne/icp";
 
         std::string pointcloudpath = "E:/pointclouddata/data_odometry_velodyne/sequences/";
-        std::string featuretype = "fpfh";//fcgf fpfh
+        std::string featuretype = "fcgf";//fcgf fpfh
         std::string featurepath = "E:/pointclouddata/data_odometry_velodyne/feat_"+ featuretype +"_txt/";
         //std::string featurepath = "E:/pointclouddata/data_odometry_velodyne/feat_fpfh_txt/";
          a.Registration_KITTI(featuretype, posepath, featurepath, pointcloudpath);
