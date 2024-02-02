@@ -30,7 +30,7 @@ The download address of the required features and ICP fine optimization results:
 
 ## Results
 
-### 3DMatch
+### 3DMatch (1,279 pairs)
 
 | No|	Featrues	|RTE(cm)	|RRE(°)	|RR	|MR	|Times(s)|
 |:---|:---------:|:--------:|:--------:|:--------:|:--------:|:--------:|
@@ -49,7 +49,7 @@ The download address of the required features and ICP fine optimization results:
 
 
 
-### 3DLoMatch
+### 3DLoMatch (1,726 pairs)
 
 | No|	Featrues	|RTE(cm)	|RRE(°)	|RR	|MR	|Times(s)|
 |:---|:---------:|:--------:|:--------:|:--------:|:--------:|:--------:|
@@ -68,7 +68,7 @@ The download address of the required features and ICP fine optimization results:
 
 
 
-### KITTI
+### KITTI (555 pairs)
 | No|	Featrues	|RTE(cm)	|RRE(°)	|RR	|MR	|Times(s)|
 |:---|:---------:|:--------:|:--------:|:--------:|:--------:|:--------:|
 |1 |FCGF |4.44 |0.14 |1.0000 |1.0000 |1.12|
