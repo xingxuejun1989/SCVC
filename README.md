@@ -6,13 +6,13 @@ C++ implementation of the paper: [Efficient Single Correspondence Voting for Poi
 We are actively updating the code and will open source the paper's code after the article is officially released.
 
 ## Build
-1.Before compiling, make sure CMAKE and VS are available.
+1.Before compiling, make sure CMake and VS are available.
 
-2.The available process is to directly use CMAKE to generate the sln of vs, and then use vs to compile the code. The code relies on three open source libraries: Eigen, FLANN, and ICP_Princeton, which we have added to the source code.
+2.The available process is to directly use CMake to generate the sln of vs, and then use vs to compile the code. The code relies on three open source libraries: Eigen, FLANN, and ICP_Princeton, which we have added to the source code.
 
 3.Set the path parameters in the main function according to the path of the registration data.
 
-Code has been tested with  Win11, VS2019, CMAKE 3.24, and OpenMP.
+Code has been tested with  Win11, VS2019, CMake 3.24, and OpenMP.
 
 ## Datasets download
 
@@ -88,6 +88,7 @@ The download address of the required features and ICP fine optimization results:
 
 ## Citation
 
+If you find this code useful for your work or use it in your project, please consider citing:
 ```bibtex
 @InProceedings{XingEfficient2024,
     author    = { Xuejun Xing, Zhengda Lu, Yiqun Wang, Jun Xiao.},
