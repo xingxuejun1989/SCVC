@@ -91,12 +91,15 @@ The download address of the required features and ICP fine optimization results:
 If you find this code useful for your work or use it in your project, please consider citing:
 ```bibtex
 @InProceedings{XingEfficient2024,
-    author    = { Xuejun Xing, Zhengda Lu, Yiqun Wang, Jun Xiao.},
-    title     = {Efficient Single Correspondence Voting for Point Cloud Registration},
-    booktitle = {IEEE Transactions on Image Processing},
-    month     = {2},
-    year      = {2024},
-    pages     = {1-16}
+  author={Xing, Xuejun and Lu, Zhengda and Wang, Yiqun and Xiao, Jun},
+  journal={IEEE Transactions on Image Processing}, 
+  title={Efficient Single Correspondence Voting for Point Cloud Registration}, 
+  year={2024},
+  volume={},
+  number={},
+  pages={1-16},
+  keywords={Single correspondence voting;Viewpoint deviation distance;Registration;3D point cloud},
+  doi={10.1109/TIP.2024.3374120}
 }
 ```
 
