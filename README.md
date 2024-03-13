@@ -1,6 +1,6 @@
 # Efficient Single Correspondence Voting for Point Cloud Registration
 
-C++ implementation of the paper: [Efficient Single Correspondence Voting for Point Cloud Registration]
+C++ implementation of the paper: [Efficient Single Correspondence Voting for Point Cloud Registration](https://doi.org/10.1109/TIP.2024.3374120)
 
 ## Introduction
 We are actively updating the code and will open source the paper's code after the article is officially released.
