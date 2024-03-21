@@ -95,10 +95,10 @@ If you find this code useful for your work or use it in your project, please con
   journal={IEEE Transactions on Image Processing}, 
   title={Efficient Single Correspondence Voting for Point Cloud Registration}, 
   year={2024},
-  volume={},
+  volume={33},
   number={},
-  pages={1-16},
-  keywords={Single correspondence voting;Viewpoint deviation distance;Registration;3D point cloud},
+  pages={2116-2130},
+  keywords={Point cloud compression;Iterative methods;Three-dimensional displays;Feature extraction;Deep learning;Computational efficiency;Task analysis;Single correspondence voting;viewpoint deviation distance;registration;3D point cloud},
   doi={10.1109/TIP.2024.3374120}
 }
 ```
