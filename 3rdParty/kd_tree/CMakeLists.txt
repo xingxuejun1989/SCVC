@@ -5,6 +5,18 @@ project(${PROJECT_NAME})
 
 
 set(kdtree_HEADERS
+    ANN/ANN.h
+    ANN/ANNperf.h
+    ANN/ANNx.h
+    ANN/bd_tree.h
+    ANN/kd_fix_rad_search.h
+    ANN/kd_pr_search.h
+    ANN/kd_search.h
+    ANN/kd_split.h
+    ANN/kd_tree.h
+    ANN/kd_util.h
+    ANN/pr_queue.h
+    ANN/pr_queue_k.h
     ETH_Kd_Tree/kdTree.h
     ETH_Kd_Tree/PriorityQueue.h
     ETH_Kd_Tree/QueryGrid.h
@@ -42,10 +54,25 @@ set(kdtree_HEADERS
     FLANN/util/saving.h
     FLANN/util/serialization.h
     FLANN/util/timer.h
+    nanoflann/nanoflann.hpp
     )
 
 set(kdtree_SOURCES
-    FLANN/util/timer.h
+    ANN/ANN.cpp
+    ANN/bd_fix_rad_search.cpp
+    ANN/bd_pr_search.cpp
+    ANN/bd_search.cpp
+    ANN/bd_tree.cpp
+    ANN/brute.cpp
+    ANN/kd_dump.cpp
+    ANN/kd_fix_rad_search.cpp
+    ANN/kd_pr_search.cpp
+    ANN/kd_search.cpp
+    ANN/kd_split.cpp
+    ANN/kd_tree.cpp
+    ANN/kd_util.cpp
+    ANN/perf.cpp
+    ETH_Kd_Tree/kdTree.cpp
     )
 
 
